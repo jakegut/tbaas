@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	// Bucket with 1 token per second
+	// Bucket with 5 tokens per minute
 	b := tbaas.MakeBucket(5, time.Minute)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
