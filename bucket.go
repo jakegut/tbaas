@@ -1,4 +1,4 @@
-package main
+package tbaas
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func MakeBucketWithClock(maxTokens int64, interval time.Duration, clock Clock) *
 	}
 }
 
-func (b *Bucket) Take(ctx context.Context, key string, amount int64) error {
+func (b *Bucket) Take(ctx context.Context, key string, amount int64) (int64, error) {
 	bk, err := b.store.Get(key)
 	if err != nil {
 		b.store.Put(key, &BucketKey{tokens: b.maxTokens, lastCheck: 0, parent: b})
@@ -46,7 +46,7 @@ type BucketKey struct {
 
 var ErrorTokensExceeded = errors.New("amount exceeded tokens")
 
-func (bk *BucketKey) Take(ctx context.Context, amount int64) error {
+func (bk *BucketKey) Take(ctx context.Context, amount int64) (int64, error) {
 	bk.mu.Lock()
 	defer bk.mu.Unlock()
 
@@ -64,12 +64,12 @@ func (bk *BucketKey) Take(ctx context.Context, amount int64) error {
 	}
 
 	if amount > bk.tokens {
-		return ErrorTokensExceeded
+		return -1, ErrorTokensExceeded
 	} else {
 		bk.tokens -= amount
 	}
 
-	return nil
+	return bk.tokens, nil
 }
 
 type Store struct {

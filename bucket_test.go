@@ -1,4 +1,4 @@
-package main
+package tbaas
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func TestBasicRateLimit(t *testing.T) {
 	bucket := MakeBucket(10, time.Hour)
 
 	for _, key := range uniqKeys {
-		if err := bucket.Take(context.Background(), key, 1); err != nil {
+		if _, err := bucket.Take(context.Background(), key, 1); err != nil {
 			t.Fatalf("key %s failed", key)
 		}
 	}
@@ -26,7 +26,7 @@ func TestBasicRateLimit(t *testing.T) {
 	bucket = MakeBucket(10, time.Hour)
 
 	for _, key := range uniqKeys {
-		if err := bucket.Take(context.Background(), key, 11); err == nil {
+		if _, err := bucket.Take(context.Background(), key, 11); err == nil {
 			t.Fatalf("key %s failed", key)
 		}
 	}
@@ -50,11 +50,11 @@ func TestRateLimit(t *testing.T) {
 		for _, key := range uniqKeys {
 			var i int64
 			for i = 0; i < tokens; i++ {
-				if err := bucket.Take(context.Background(), key, 1); err != nil {
+				if _, err := bucket.Take(context.Background(), key, 1); err != nil {
 					t.Fatalf("key %s failed", key)
 				}
 			}
-			if err := bucket.Take(context.Background(), key, 1); err == nil {
+			if _, err := bucket.Take(context.Background(), key, 1); err == nil {
 				t.Fatalf("key %s failed", key)
 			}
 		}
